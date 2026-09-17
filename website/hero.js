@@ -1,8 +1,9 @@
-import { greetingEvents, mountKeyboard } from './keyboard-model.mjs';
+import { GREETING_ENGLISH, greetingEvents, mountKeyboard } from './keyboard-model.mjs';
 const host = document.querySelector('#keyboard-scene'), text = document.querySelector('#hero-greeting'), button = document.querySelector('#hero-pause');
+const english = document.querySelector('#hero-english'), greeting = document.querySelector('.greeting-line');
 let fallback = mountKeyboard(host);
 const motion = matchMedia('(prefers-reduced-motion: reduce)'), connection = navigator.connection;
-let scene, timeline, pendingStart, visible = true, userPaused = false, gone = false, failed = false, loading = false, generation = 0;
+let scene, timeline, pendingStart, pausedGreeting, visible = true, userPaused = false, gone = false, failed = false, loading = false, generation = 0;
 function cancelStart() {
   const pending = pendingStart; pendingStart = undefined;
   if (!pending) return;
@@ -20,13 +21,18 @@ function sync() {
 function setupTimeline() {
   timeline?.kill(); timeline = undefined;
   if (motion.matches || navigator.connection?.saveData || !window.gsap) {
-    text.textContent = '你好，欢迎你来看我的作品。跪求star支持'; button.hidden = true; return;
+    text.textContent = '你好，欢迎你来看我的作品。跪求star支持';
+    english.textContent = GREETING_ENGLISH.join('. ') + '.';
+    greeting.classList.add('is-static'); button.hidden = true; return;
   }
-  button.hidden = false; text.textContent = '';
+  greeting.classList.remove('is-static'); button.hidden = false;
+  text.textContent = userPaused ? pausedGreeting?.text ?? '' : '';
+  english.textContent = userPaused ? pausedGreeting?.english ?? '' : '';
   const sequence = greetingEvents();
   timeline = window.gsap.timeline({ paused: true, repeat: -1 });
   for (const event of sequence.events) timeline.call(() => {
     if (event.text !== undefined) text.textContent = event.text;
+    if (event.english !== undefined) english.textContent = event.english;
     if (event.key) { scene?.press(event.key); if (!scene) fallback?.press(event.key); }
   }, [], event.time);
   timeline.to({}, { duration: .01 }, sequence.duration); sync();
@@ -68,7 +74,11 @@ async function startScene() {
   } catch { if (token === generation) { failed = true; staticView(); host.querySelector('canvas')?.remove(); } }
   finally { loading = false; if (!failed && !scene && token !== generation) loadScene(); }
 }
-button.addEventListener('click', () => { userPaused = !userPaused; sync(); });
+button.addEventListener('click', () => {
+  userPaused = !userPaused;
+  pausedGreeting = userPaused ? { text: text.textContent, english: english.textContent } : undefined;
+  sync();
+});
 const observer = new IntersectionObserver(entries => { visible = entries[0].isIntersecting; sync(); if (visible) loadScene(); });
 observer.observe(host);
 function preferenceChanged() { staticView(); failed = false; setupTimeline(); loadScene(); }

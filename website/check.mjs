@@ -5,6 +5,7 @@ import { createHash } from "node:crypto";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { signerForRelease } from "./verify-apk.mjs";
+import { assertReleasePolicy } from "./release-policy.mjs";
 
 const root = path.dirname(fileURLToPath(import.meta.url));
 const [html, css, script, model, releaseText] = await Promise.all(
@@ -29,8 +30,7 @@ assert.match(html, /云翻译.*(?:同意|配置)/);
 assert.doesNotMatch(html, /assets\/(?:words|review)\.png/);
 assert.match(html, /Debug 测试版/);
 assert.match(release.sha256, /^[a-f0-9]{64}$/);
-assert.equal(release.internalCloudEnabled, false);
-assert.equal(release.speechCloudEnabled, false, "未开放的语音服务不得宣传为已启用");
+assertReleasePolicy(release, html);
 assert.equal(release.abi, "arm64-v8a");
 assert.ok(release.bytes > 0);
 assert.ok(html.includes((release.bytes / 1024 / 1024).toFixed(1) + " MiB"), "包体积与实际 APK 不一致");

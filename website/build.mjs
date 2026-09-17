@@ -23,6 +23,8 @@ await mkdir(out, { recursive: true });
 assert.equal((await readdir(out)).length, 0, "Output directory must be empty; previous builds are preserved");
 const digest = (bytes) => createHash("sha256").update(bytes).digest("hex");
 const release = JSON.parse(await readFile(path.join(root, "release.json"), "utf8"));
+assert.ok(release.distribution !== 'friends-cloud-preview' || args.includes('--allow-friends-cloud-preview'),
+  'Cloud-preview APKs require --allow-friends-cloud-preview after explicit owner approval; never publish one as a normal public build');
 assert.match(release.filename, /^haohao-ime-[a-zA-Z0-9.-]+\.apk$/);
 const apk = await readFile(apkPath);
 assert.equal(apk.length, release.bytes, "APK size does not match release.json");
@@ -64,7 +66,7 @@ const files = new Map([
   ["vendor/scene-3d.min.js", scene],
   ["release.json", await readFile(path.join(root, "release.json"))],
 ]);
-for (const name of ["haohao-golden.webp", "og.png"]) {
+for (const name of ["haohao-golden.webp", "og.png", "beian-police.png"]) {
   files.set("assets/" + name, await readFile(path.join(root, "assets", name)));
 }
 files.set("vendor/gsap-3.15.0.min.js", await readFile(path.join(root, "vendor", "gsap-3.15.0.min.js")));
@@ -91,4 +93,4 @@ const manifest = Object.fromEntries([...files].map(([name, bytes]) => [name, { b
 await writeFile(path.join(out, "manifest.json"), JSON.stringify(manifest, null, 2) + "\n");
 console.log("Production site ready: " + out);
 console.log("APK: " + release.filename + " (" + release.bytes + " bytes)");
-console.log("Only public website assets and the verified APK were included.");
+console.log("Included website assets and the verified " + (release.distribution || 'public') + " APK only; no standalone private configuration files.");

@@ -2,23 +2,25 @@ import assert from 'node:assert/strict';
 import test from 'node:test';
 import { readFile } from 'node:fs/promises';
 import vm from 'node:vm';
-import { KEY_ROWS } from './keyboard-model.mjs';
+import { KEY_ROWS, GREETING, GREETING_ENGLISH } from './keyboard-model.mjs';
 import { SKINS } from './showroom.js';
 
 const source = await readFile(new URL('./browser-check.js', import.meta.url), 'utf8');
 const ids = KEY_ROWS.flat().map(key => key.id);
 const literal = name => JSON.parse(JSON.stringify(vm.runInNewContext(source.match(new RegExp('const ' + name + ' = ([^;]+);'))[1])));
 // Exercise the real assertion helpers without opening a browser or pretending to test layout.
-const helpers = async () => vm.runInNewContext(source.slice(0, source.indexOf("  page.on('pageerror'")) + '\n  return { completeBoard, heroFallback };\n}')(null, { baseURL: 'https://example.test/' });
+const helpers = async () => vm.runInNewContext(source.slice(0, source.indexOf("  page.on('pageerror'")) + '\n  return { completeBoard, heroFallback, assertGreetingPair };\n}')(null, { baseURL: 'https://example.test/' });
 
 test('CI browser script is a standalone async function with no browser launch side effect', () => {
   const run = vm.runInNewContext(source);
   assert.equal(typeof run, 'function'); assert.equal(run.constructor.name, 'AsyncFunction');
   assert.doesNotMatch(source, /chromium\.launch|browserType\.launch|ignoreHTTPSErrors|rejectUnauthorized/);
-  assert.doesNotMatch(source, /data-hero-example|collect-demo|hero-english|saved-word|phonetic-toggle|candidate-list|learning-image|scene-still/);
+  assert.doesNotMatch(source, /data-hero-example|collect-demo|saved-word|phonetic-toggle|candidate-list|learning-image|scene-still/);
+  assert.match(source, /#hero-english/);
 });
 test('CI fixtures match the real 33-key layout, ten skin IDs and current three story videos', async () => {
   assert.deepEqual(literal('keyIds'), ids); assert.deepEqual(literal('skinIds'), Object.keys(SKINS));
+  assert.deepEqual(literal('greetingPairs'), GREETING.map((sentence,index) => [sentence.map(([word]) => word).join(''),GREETING_ENGLISH[index]]));
   const html = await readFile(new URL('./index.html', import.meta.url), 'utf8');
   const labels = [...html.matchAll(/<video\b[^>]*data-demo-video[^>]*aria-label="([^"]+)"/g)].map(match => match[1]);
   assert.equal(labels.length, 3); for (const label of labels) assert.ok(source.includes("'" + label + "'"));
@@ -38,4 +40,10 @@ test('CI fallback assertion requires exactly one complete visible board', async 
   await heroFallback(target(1, true));
   await assert.rejects(heroFallback(target(2, true)), /Exactly one/);
   await assert.rejects(heroFallback(target(1, false)), /visible/);
+});
+test('CI bilingual assertion accepts matching partial phrases and rejects stale English or unpaired clearing', async () => {
+  const { assertGreetingPair } = await helpers();
+  assertGreetingPair(['','']);
+  for (const [chinese,english] of literal('greetingPairs')) for (let length=1;length<=chinese.length;length++) assertGreetingPair([chinese.slice(0,length),english]);
+  for (const pair of [['你好',''],['欢迎','Hello'],['','Hello'],['不存在','Hello']]) assert.throws(() => assertGreetingPair(pair), /stay paired/);
 });

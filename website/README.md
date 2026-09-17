@@ -41,6 +41,25 @@ Windows 检出时，`.gitattributes` 为 `vendor/*.min.js` 固定 LF 换行，�
 
 ## 发布构建
 
+### 当前分发：3.3.27 云内测（2026-09-15）
+
+维护者本次明确要求将现有 3.3.27 / 20261012 云内测 APK 直接放在官网下载，
+并在被告知网站公开可访问后确认继续。此例外不是普通无内置凭据的公开构建。
+云翻译需在 App 选择「混合」并授权，无需输入 API；内置云请求截止日仍为 2026-09-30。
+APK 含既有可被提取的内测配置，下载不受提取码保护；不得把它描述为私有分发或无内置凭据。
+腾讯云联网发音尚未开放，不能因包中保留配置而宣称可用。
+
+`release.json` 显式记录 `friends-cloud-preview`、截止日与本次公开分发风险确认。
+`release-policy.mjs` 仍拒绝普通 `public` 分发内置云配置；构建此内测网页产物还必须显式传入：
+
+```sh
+node website/build.mjs --apk /path/to/verified-cloud-preview.apk --out /path/to/new-empty-release --allow-friends-cloud-preview
+```
+
+不得因此放宽 Android 的普通公开构建策略，不上传独立配置、签名私钥或口令。
+此次直接复用已验证固定签名的 APK，不重新生成签名、不改变手机安装数据。
+详见[此次分发记录](../docs/development/friends-cloud-preview-20260915.md)。
+
 ### 可点击的皮肤键盘
 
 `showroom.js` / `showroom.css` 使用真实按钮和 CSS 透视、键帽厚度实现立体皮肤键盘，点击、触摸和键盘激活共享同一输入逻辑。展示动画不能替代输入处理。支持选区替换、按完整 Unicode 字符删除、大小写、中英文模式及空格选词；中文仍只提供已有三组示例，不伪造任意拼音转换。切换四种配色与六种角色皮肤保留输入，不写本地存储。皮肤图来自原线上资源，继续标注同人预览及尚未内置 App。
@@ -58,7 +77,7 @@ Windows 检出时，`.gitattributes` 为 `vendor/*.min.js` 固定 LF 换行，�
 ./gradlew :app:assembleDebug -PpublicDistribution=true -PembedInternalCloudSecrets=false -PbuildABI=arm64-v8a
 ```
 
-公开下载包必须使用 `-PpublicDistribution=true -PembedInternalCloudSecrets=false`。
+普通公开构建必须使用 `-PpublicDistribution=true -PembedInternalCloudSecrets=false`。
 固定身份位于仓库根目录 `public-signing.properties`（只有公开指纹，无私钥）。
 私钥默认读取用户目录的 `.haohao-ime/signing/public-test.keystore`，也可通过
 `HAOHAO_PUBLIC_KEYSTORE` 指向备份恢复后的文件；禁止每次发布重新生成。
@@ -86,11 +105,14 @@ node website/build.mjs --apk /path/to/verified.apk --out /path/to/new-empty-rele
 构建会通过 Android 官方 apksigner 验证 APK 完整签名及固定指纹，再校验 SHA-256
 和字节数，合并演示模块以减少请求，为脚本和样式
 生成内容哈希缓存版本（含 hero 控制器、动态 3D 模块与图片），输出 gzip 副本、校验文件和公开资源清单。
-仅白名单内的文件会进入产物；测试代码、SSH 密钥、云凭据和本地配置不会打包。
+仅白名单内的文件会进入产物；测试代码、SSH 密钥和独立本地配置不会打包。
+普通公开 APK 不含共享云凭据；上文明确批准的云内测 APK 是本次例外。
 
 ## 腾讯云部署约定
 
-- 网站：`http://124.221.187.214/`。
+- 网站：`https://haohaoime.com/`；域名配置见 `server/website/README.md`。
+- 2026-09-17 核实公安备案有效：`冀公网安备13010802002861号`，与原 ICP 号并列显示在可见页脚，链接至 `https://beian.mps.gov.cn/#/query/webSearch?code=13010802002861`。
+- 公安图标 `assets/beian-police.png` 原样取自公安平台网站详情中的展示图标 `https://beian.mps.gov.cn/web/assets/logo01.6189a29f.png`（2026-09-17），SHA-256：`6189a29f86e1756d1970f4446b9f836642c283c373d312dbddeb42411f1608e6`；仅用于备案展示，不重新绘制或用平台自己的备案号替代。
 - Nginx 网站配置：`/www/server/panel/vhost/nginx/haohao-ime.conf`。
 - 发布目录：`/www/wwwroot/haohao-ime/releases/`。
 - 当前线上指针：`/www/wwwroot/haohao-ime/current`。

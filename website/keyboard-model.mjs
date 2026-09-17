@@ -32,18 +32,19 @@ export const GREETING = [
   [['欢', 'huan'], ['迎', 'ying'], ['你', 'ni'], ['来', 'lai'], ['看', 'kan'], ['我', 'wo'], ['的', 'de'], ['作', 'zuo'], ['品', 'pin']],
   [['跪', 'gui'], ['求', 'qiu'], ['s', 's'], ['t', 't'], ['a', 'a'], ['r', 'r'], ['支', 'zhi'], ['持', 'chi']],
 ];
+export const GREETING_ENGLISH = ['Hello', 'Welcome to my project', 'Please support me with a star'];
 export function greetingEvents() {
   const events = []; let time = .5;
   GREETING.forEach((sentence, index) => {
-    events.push({ time, text: '' }); let text = '';
+    events.push({ time, text: '', english: '' }); let text = '';
     sentence.forEach(([word, keys]) => {
       for (const key of keys) { events.push({ time, key: key.toUpperCase() }); time += .095; }
-      text += word; events.push({ time, text }); time += .06;
+      text += word; events.push({ time, text, english: GREETING_ENGLISH[index] }); time += .06;
     });
     time += index === 2 ? 3 : 1.5;
     events.push({ time, key: 'ENTER' }); time += .3;
   });
-  events.push({ time, text: '' }); return { events, duration: time + .65 };
+  events.push({ time, text: '', english: '' }); return { events, duration: time + .65 };
 }
 export function mountKeyboard(host, { interactive = false } = {}) {
   host.querySelector('[data-static-keyboard]')?.remove();

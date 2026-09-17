@@ -2,11 +2,11 @@ import assert from 'node:assert/strict';
 import {readFile} from 'node:fs/promises';
 import test from 'node:test';
 import vm from 'node:vm';
-import {KEY_ROWS,GREETING,greetingEvents,mountKeyboard} from './keyboard-model.mjs';
+import {KEY_ROWS,GREETING,GREETING_ENGLISH,greetingEvents,mountKeyboard} from './keyboard-model.mjs';
 import {Element,tick} from './test-dom.mjs';
 const source=(await readFile(new URL('./hero.js',import.meta.url),'utf8')).replace(/^import[^\n]+\n/,'').replace(/import\("\.\/vendor\/scene-3d\.min\.js[^"\n]*"\)/,'loadModule()');
-async function setup({reduced=false,saveData=false,fail=false,deferred=false,scheduler='none'}={}){
- const elements=Object.fromEntries(['keyboard-scene','hero-greeting','hero-pause'].map(id=>[id,new Element()]));
+async function setup({reduced=false,saveData=false,fail=false,deferred=false,scheduler='none',noGsap=false}={}){
+ const elements=Object.fromEntries(['keyboard-scene','hero-greeting','hero-english','greeting-line','hero-pause'].map(id=>[id,new Element()]));
  const document=new Element(),window=new Element(),motion=new Element(),connection=new Element();motion.matches=reduced;connection.saveData=saveData;document.hidden=false;document.querySelector=s=>elements[s.slice(1)];
  const timelines=[],presses=[],frames=new Map(),idles=new Map(),timers=new Map();let intersect,imports=0,disposed=0,created=0,release,mounts=0,fallbackDisposed=0,nextJob=0;
  if(scheduler!=='none') { window.setTimeout=fn=>{timers.set(++nextJob,fn);return nextJob;};window.clearTimeout=id=>timers.delete(id); }
@@ -14,7 +14,8 @@ async function setup({reduced=false,saveData=false,fail=false,deferred=false,sch
  if(['both','idle-only'].includes(scheduler)) { window.requestIdleCallback=(fn,options)=>{assert.equal(options.timeout,1000);idles.set(++nextJob,fn);return nextJob;};window.cancelIdleCallback=id=>idles.delete(id); }
  window.gsap={timeline(options){const t={options,calls:[],active:false,killed:false,call(fn,args,time){this.calls.push({fn,time});return this;},to(){return this;},play(){this.active=true;},pause(){this.active=false;},kill(){this.killed=true;this.active=false;}};timelines.push(t);return t;}};
  const module={createKeyboardScene(host,opts){created++;assert.equal(opts.interactive,false);opts.onReady();return{press:k=>presses.push(k),dispose(){disposed++;}};}};
- vm.runInNewContext(source,{document,window,matchMedia:()=>motion,navigator:{connection},greetingEvents,mountKeyboard:()=>{mounts++;return{press:k=>presses.push(k),dispose(){fallbackDisposed++;}};},IntersectionObserver:class{constructor(fn){intersect=fn;}observe(){}disconnect(){}},loadModule:async()=>{imports++;if(fail)throw Error('WebGL unavailable');return deferred?new Promise(resolve=>{release=()=>resolve(module);}):module;}});await tick();
+ if(noGsap)window.gsap=undefined;
+ vm.runInNewContext(source,{document,window,matchMedia:()=>motion,navigator:{connection},GREETING_ENGLISH,greetingEvents,mountKeyboard:()=>{mounts++;return{press:k=>presses.push(k),dispose(){fallbackDisposed++;}};},IntersectionObserver:class{constructor(fn){intersect=fn;}observe(){}disconnect(){}},loadModule:async()=>{imports++;if(fail)throw Error('WebGL unavailable');return deferred?new Promise(resolve=>{release=()=>resolve(module);}):module;}});await tick();
  const flush=async queue=>{const callbacks=[...queue.values()];queue.clear();callbacks.forEach(fn=>fn());await tick();};
  return{elements,document,window,motion,connection,timelines,presses,frames,idles,timers,frame:()=>flush(frames),idle:()=>flush(idles),timer:()=>flush(timers),release:()=>release(),imports:()=>imports,created:()=>created,disposed:()=>disposed,mounts:()=>mounts,fallbackDisposed:()=>fallbackDisposed,intersect:v=>intersect([{isIntersecting:v}])};
 }
@@ -26,6 +27,88 @@ test('complete 26-key board, exact greeting, corresponding keys and phrase holds
 });
 test('automatic timeline drives physical keys and clears for next loop',async()=>{
  const a=await setup(),t=a.timelines[0];assert.equal(t.options.repeat,-1);assert.ok(t.active);t.calls.forEach(c=>c.fn());assert.ok(a.presses.includes('N'));assert.equal(a.elements['hero-greeting'].textContent,'');assert.equal(a.presses.filter(k=>k==='ENTER').length,3);
+});
+test('every timeline event preserves the bilingual pair, including key-only events and repeated-loop clears',async()=>{
+ const a=await setup(),sequence=greetingEvents(),phrases=GREETING.map(s=>s.map(c=>c[0]).join(''));
+ assert.deepEqual(GREETING_ENGLISH,['Hello','Welcome to my project','Please support me with a star']);
+ assert.equal(a.elements['hero-greeting'].textContent,'');assert.equal(a.elements['hero-english'].textContent,'');
+ let expectedChinese='',expectedEnglish='';
+ for(let loop=0;loop<2;loop++) {
+  for(const [index,event] of sequence.events.entries()) {
+   assert.equal(a.timelines[0].calls[index].time,event.time);
+   a.timelines[0].calls[index].fn();
+   if(event.text!==undefined) {
+    expectedChinese=event.text;expectedEnglish=event.text?GREETING_ENGLISH[phrases.findIndex(phrase=>phrase.startsWith(event.text))]:'';
+    assert.equal(event.english,expectedEnglish);
+   } else assert.equal(event.english,undefined,'key-only events must not replace the translation');
+   assert.equal(a.elements['hero-greeting'].textContent,expectedChinese,'Chinese at event '+index);
+   assert.equal(a.elements['hero-english'].textContent,expectedEnglish,'English at event '+index);
+  }
+ }
+});
+test('English has a no-script default and complete static copy for reduced motion, save-data and failed GSAP',async()=>{
+ const html=await readFile(new URL('./index.html',import.meta.url),'utf8');
+ assert.match(html,/id="hero-english" lang="en">Hello<\/div>/);assert.match(html,/<span lang="en">Hello\. Welcome to my project\. Please support me with a star\.<\/span>/);
+ const noScript=html.match(/<noscript>([\s\S]*?)<\/noscript>/)[1];
+ assert.match(noScript,/class="greeting-line is-static no-script-greeting"/);assert.match(noScript,/class="greeting-chinese">你好，欢迎你来看我的作品。跪求star支持。/);assert.match(noScript,/class="greeting-english" lang="en">Hello\. Welcome to my project\. Please support me with a star\./);
+ assert.match(noScript,/\.greeting-line:not\(\.no-script-greeting\),#hero-pause\{display:none\}/);
+ for(const options of [{reduced:true},{saveData:true},{noGsap:true}]) {
+  const a=await setup(options);assert.equal(a.timelines.length,0);assert.equal(a.elements['hero-english'].textContent,GREETING_ENGLISH.join('. ')+'.');assert.ok(a.elements['greeting-line'].classList.contains('is-static'));
+ }
+ const a=await setup({reduced:true});a.motion.matches=false;a.motion.emit('change');await tick();
+ assert.ok(!a.elements['greeting-line'].classList.contains('is-static'));assert.equal(a.elements['hero-english'].textContent,'');
+ a.timelines[0].calls.find((_,index)=>greetingEvents().events[index].text==='你好').fn();assert.equal(a.elements['hero-english'].textContent,'Hello');
+ a.elements['hero-pause'].emit('click');a.document.hidden=true;a.document.emit('visibilitychange');a.document.hidden=false;a.document.emit('visibilitychange');
+ assert.ok(!a.timelines[0].active);assert.equal(a.elements['hero-greeting'].textContent,'你好');assert.equal(a.elements['hero-english'].textContent,'Hello');
+});
+test('second and third phrases switch to static bilingual copy and restart once after preference restoration',async()=>{
+ for(const [partial,translation] of [['欢迎你来',GREETING_ENGLISH[1]],['跪求',GREETING_ENGLISH[2]]]) for(const preference of ['motion','connection']) {
+  const a=await setup({scheduler:'both'}),sequence=greetingEvents(),before=a.timelines[0];
+  const pair=()=>[a.elements['hero-greeting'].textContent,a.elements['hero-english'].textContent];
+  const index=sequence.events.findIndex(event=>event.text===partial);assert.ok(index>=0);
+  before.calls.slice(0,index+1).forEach(call=>call.fn());assert.deepEqual(pair(),[partial,translation]);
+  const setPreference=value=>{a[preference][preference==='motion'?'matches':'saveData']=value;a[preference].emit('change');};
+  setPreference(true);
+  assert.ok(before.killed);assert.equal(a.timelines.filter(t=>!t.killed).length,0);
+  assert.deepEqual(pair(),['你好，欢迎你来看我的作品。跪求star支持',GREETING_ENGLISH.join('. ')+'.']);
+  assert.ok(a.elements['greeting-line'].classList.contains('is-static'));assert.ok(a.elements['hero-pause'].hidden);
+  assert.equal(a.frames.size+a.idles.size+a.timers.size,0);
+  setPreference(false);a.window.emit('pageshow');a.window.emit('pageshow');a.intersect(true);a.document.emit('visibilitychange');
+  let live=a.timelines.filter(t=>!t.killed);assert.equal(live.length,1);assert.ok(live[0].active);assert.equal(a.timelines.length,2);
+  assert.deepEqual(pair(),['','']);assert.ok(!a.elements['greeting-line'].classList.contains('is-static'));assert.ok(!a.elements['hero-pause'].hidden);assert.equal(a.frames.size,1);
+  live[0].calls.slice(0,index+1).forEach(call=>call.fn());assert.deepEqual(pair(),[partial,translation]);
+  a.window.emit('pagehide');a.window.emit('pageshow');a.window.emit('pageshow');
+  live=a.timelines.filter(t=>!t.killed);assert.equal(live.length,1);assert.ok(live[0].active);assert.deepEqual(pair(),['','']);assert.equal(a.frames.size,1);
+ }
+});
+test('manual pause keeps its bilingual snapshot across pagehide and repeated pageshow',async()=>{
+ const a=await setup(),sequence=greetingEvents(),index=sequence.events.findIndex(event=>event.text==='欢迎你来');
+ a.timelines[0].calls.slice(0,index+1).forEach(call=>call.fn());a.elements['hero-pause'].emit('click');
+ const pair=()=>[a.elements['hero-greeting'].textContent,a.elements['hero-english'].textContent];
+ const paused=['欢迎你来',GREETING_ENGLISH[1]];assert.deepEqual(pair(),paused);
+ a.window.emit('pagehide');a.window.emit('pageshow');a.window.emit('pageshow');await tick();
+ const live=a.timelines.filter(t=>!t.killed);assert.equal(live.length,1);assert.ok(!live[0].active);assert.deepEqual(pair(),paused);
+ assert.equal(a.elements['hero-pause'].getAttribute('aria-pressed'),'true');
+ a.intersect(false);a.intersect(true);a.document.hidden=true;a.document.emit('visibilitychange');a.document.hidden=false;a.document.emit('visibilitychange');
+ assert.ok(!live[0].active);assert.deepEqual(pair(),paused);
+ a.elements['hero-pause'].emit('click');assert.ok(live[0].active);
+});
+test('manual pause survives static preference toggles without losing either greeting',async()=>{
+ for(const preference of ['motion','connection']) {
+  const a=await setup(),sequence=greetingEvents(),index=sequence.events.findIndex(event=>event.text==='跪求star');
+  a.timelines[0].calls.slice(0,index+1).forEach(call=>call.fn());a.elements['hero-pause'].emit('click');
+  const pair=()=>[a.elements['hero-greeting'].textContent,a.elements['hero-english'].textContent];
+  const paused=['跪求star',GREETING_ENGLISH[2]];assert.deepEqual(pair(),paused);
+  const setPreference=value=>{a[preference][preference==='motion'?'matches':'saveData']=value;a[preference].emit('change');};
+  for(let restore=0;restore<2;restore++) {
+   setPreference(true);assert.ok(a.elements['greeting-line'].classList.contains('is-static'));
+   assert.deepEqual(pair(),['你好，欢迎你来看我的作品。跪求star支持',GREETING_ENGLISH.join('. ')+'.']);
+   setPreference(false);a.window.emit('pageshow');await tick();
+   const live=a.timelines.filter(t=>!t.killed);assert.equal(live.length,1);assert.ok(!live[0].active);assert.deepEqual(pair(),paused);
+   assert.equal(a.elements['hero-pause'].getAttribute('aria-pressed'),'true');assert.ok(!a.elements['greeting-line'].classList.contains('is-static'));
+  }
+  a.elements['hero-pause'].emit('click');assert.ok(a.timelines.at(-1).active);
+ }
 });
 test('manual pause survives visibility changes; background and offscreen pause',async()=>{
  const a=await setup(),t=a.timelines[0];a.elements['hero-pause'].emit('click');assert.ok(!t.active);a.intersect(false);a.intersect(true);assert.ok(!t.active);a.elements['hero-pause'].emit('click');assert.ok(t.active);a.document.hidden=true;a.document.emit('visibilitychange');assert.ok(!t.active);a.document.hidden=false;a.document.emit('visibilitychange');assert.ok(t.active);a.intersect(false);assert.ok(!t.active);

@@ -8,10 +8,17 @@ async (page, { baseURL, screenshotDir = 'work' } = {}) => {
   const same = (actual, expected, message) => assert(JSON.stringify(actual) === JSON.stringify(expected), message + ': ' + JSON.stringify(actual));
   const keyIds = [...'QWERTYUIOPASDFGHJKL', 'SHIFT', ...'ZXCVBNM', 'BACKSPACE', 'LANG', ',', 'SPACE', '.', 'ENTER'];
   const skinIds = ['cream', 'blue', 'apricot', 'graphite', 'taffy', 'raiden', 'yasuo', 'nailong', 'kun', 'lanyangyang'];
+  const greetingPairs = [['你好', 'Hello'], ['欢迎你来看我的作品', 'Welcome to my project'], ['跪求star支持', 'Please support me with a star']];
   const errorListener = error => errors.push(error.message);
   const screenshot = (target, name, fullPage = false) => screenshotDir ? target.screenshot({ path: screenshotDir + '/' + name + '.png', fullPage }) : undefined;
   const centered = locator => locator.evaluate(element => element.scrollIntoView({ block: 'center', behavior: 'instant' }));
   const mediaRequest = url => /\/demo-[^/]+\.(?:webm|mp4)(?:\?|$)/.test(url);
+  const readGreeting = target => target.evaluate(() => [document.querySelector('#hero-greeting').textContent, document.querySelector('#hero-english').textContent]);
+  function assertGreetingPair(pair) {
+    const [chinese, english] = pair;
+    const expected = chinese ? greetingPairs.find(([phrase]) => phrase.startsWith(chinese))?.[1] : '';
+    assert(expected !== undefined && english === expected, 'Hero Chinese/English stay paired: ' + JSON.stringify(pair));
+  }
   async function completeBoard(target, selector, attribute) {
     const ids = await target.locator(selector).evaluateAll((keys, name) => keys.map(key => key.getAttribute(name)), attribute);
     same(ids, keyIds, 'Complete 33-key board: ' + selector);
@@ -70,15 +77,18 @@ async (page, { baseURL, screenshotDir = 'work' } = {}) => {
     assert(await page.locator('#keyboard-scene > .flat-board').count() === 1, 'Dynamic hero does not duplicate static board');
     assert(await page.locator('#keyboard-scene [data-static-keyboard]').count() === 0, 'Static board is replaced by complete dynamic fallback');
     await page.waitForFunction(() => Boolean(document.querySelector('#keyboard-scene').dataset.lastKey));
+    await page.waitForFunction(() => Boolean(document.querySelector('#hero-greeting').textContent && document.querySelector('#hero-english').textContent));
     await page.getByRole('button', { name: '暂停动画', exact: true }).click();
     assert(await page.locator('#hero-pause').getAttribute('aria-pressed') === 'true', 'Hero pause is accessible');
+    const pausedGreeting = await readGreeting(page); assertGreetingPair(pausedGreeting);
     await page.waitForTimeout(250); // Finish the final 170ms key press before measuring idle rendering.
     const idleFrames = await page.locator('#keyboard-scene').getAttribute('data-rendered-frames');
     await page.waitForTimeout(250);
     assert(await page.locator('#keyboard-scene').getAttribute('data-rendered-frames') === idleFrames, 'Paused hero does not continuously render');
+    same(await readGreeting(page), pausedGreeting, 'Manual pause preserves both greeting lines');
     await page.getByRole('button', { name: '继续动画', exact: true }).click();
     await screenshot(page, 'website-desktop');
-    results.push('Hero real WebGL, complete single fallback, automatic typing, accessible pause, idle rendering');
+    results.push('Hero real WebGL, complete single fallback, paired bilingual greeting, accessible pause, idle rendering');
 
     await posterReady(page);
     const videoLabels = await page.locator('[data-demo-video]').evaluateAll(videos => videos.map(video => ({
@@ -170,6 +180,10 @@ async (page, { baseURL, screenshotDir = 'work' } = {}) => {
           assert(!await fallback.locator('.studio-perspective').evaluate(element => element.classList.contains('is-ready')), name + ': interactive DOM keyboard');
         }
         if (['no-js', 'reduced-motion', 'save-data'].includes(name)) {
+          const staticCopy = fallback.locator(name === 'no-js' ? '.no-script-greeting' : '.greeting-line.is-static');
+          assert(await staticCopy.isVisible(), name + ': full bilingual greeting is visually available');
+          assert((await staticCopy.locator('.greeting-chinese').textContent()).includes('你好，欢迎你来看我的作品。跪求star支持'), name + ': complete Chinese greeting');
+          same(await staticCopy.locator('.greeting-english').textContent(), greetingPairs.map(pair => pair[1]).join('. ') + '.', name + ': complete English greeting');
           await centered(fallback.locator('[data-demo-video]').first());
           await fallback.waitForTimeout(250); // Let intersection callbacks run before testing suppressed optional work.
           assert(!requested.some(url => url.includes('scene-3d.min.js')), name + ': no 3D download');

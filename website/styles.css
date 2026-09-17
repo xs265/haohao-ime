@@ -37,6 +37,8 @@ p { line-height:1.8; }
 .nav-star>span:first-child { font-size:24px; }
 .button { display:inline-flex; align-items:center; justify-content:center; gap:10px; min-height:54px; padding:14px 24px; border:0; border-radius:12px; font-size:15px; font-weight:600; line-height:1.5; text-decoration:none; transition:transform .2s var(--ease),background-color .2s; }
 .button-primary { background:var(--honey); color:#443322; }
+.button-download { background:var(--mint); color:var(--focus); white-space:nowrap; }
+.download-arrow { font-size:1.2em; line-height:1; }
 .button-small { min-height:44px; padding:10px 17px; font-size:13px; border-radius:10px; }
 .button:active { transform:translateY(2px); }
 .icon { width:21px; height:21px; fill:none; stroke:currentColor; stroke-width:1.6; stroke-linecap:round; stroke-linejoin:round; }
@@ -49,7 +51,11 @@ h1 { font-size:clamp(18px,1.7vw,26px); font-weight:650; margin-bottom:22px; }
 .hero-description { color:var(--muted); font-size:16px; margin-top:26px; max-width:24em; text-wrap:pretty; }
 .hero-actions { display:flex; flex-wrap:wrap; align-items:center; gap:18px 24px; margin-top:32px; }
 .hero-study { min-width:0; position:relative; }
-.greeting-line { display:flex; align-items:center; justify-content:center; height:108px; padding:0 24px; text-align:center; font-size:clamp(22px,2.4vw,38px); letter-spacing:-.035em; font-weight:500; color:var(--focus); }
+.greeting-line { display:flex; flex-direction:column; justify-content:center; gap:8px; height:128px; padding:0 24px; text-align:center; font-size:clamp(22px,2.4vw,38px); letter-spacing:-.035em; font-weight:500; color:var(--focus); }
+.greeting-chinese { display:flex; align-items:center; justify-content:center; min-height:1.3em; line-height:1.3; }
+.greeting-english { min-height:2.8em; font-size:clamp(17px,1.6vw,24px); line-height:1.4; letter-spacing:-.015em; font-weight:400; color:var(--muted); text-wrap:balance; }
+.greeting-line.is-static { height:auto; min-height:128px; padding-block:12px; }
+.greeting-line.is-static .typing-cursor { display:none; }
 #hero-greeting { min-width:0; text-wrap:balance; }
 .typing-cursor { height:1em; width:2px; margin-left:6px; background:currentColor; flex-shrink:0; }
 .keyboard-scene { position:relative; width:100%; aspect-ratio:1.85; }
@@ -137,6 +143,8 @@ summary::-webkit-details-marker { display:none; }
 .footer-links { display:flex; flex-wrap:wrap; gap:12px 24px; align-items:center; font-size:12px; }
 .footer-inner>.footer-links { margin-left:auto; }
 .footer-links a { padding-block:12px; text-decoration:none; }
+.police-filing { display:inline-flex; align-items:center; gap:6px; }
+.police-filing img { width:20px; height:22px; object-fit:contain; flex-shrink:0; }
 .legal-details { width:100%; color:var(--muted); font-size:12px; }
 .legal-details summary { min-height:36px; display:flex; align-items:center; }
 .legal-details p { margin-top:10px; }
@@ -169,7 +177,7 @@ summary::-webkit-details-marker { display:none; }
  .hero { display:flex; flex-direction:column; align-items:stretch; min-height:0; padding-block:34px 50px; gap:0; }
  h1 { font-size:18px; margin-bottom:16px; }.hero-lede { font-size:clamp(39px,8.8vw,58px); line-height:1.22; }
  .hero-description { margin-top:20px; font-size:14px; max-width:none; }.hero-actions { margin-top:22px; gap:18px; }.hero-actions .button { min-height:50px; padding-inline:20px; font-size:14px; }
- .hero-study { margin:26px -10px 0; width:calc(100% + 20px); }.greeting-line { height:84px; font-size:22px; padding-inline:16px; }.keyboard-scene { aspect-ratio:1.65; }
+ .hero-study { margin:26px -10px 0; width:calc(100% + 20px); }.greeting-line { height:104px; font-size:22px; padding-inline:16px; }.keyboard-scene { aspect-ratio:1.65; }
  .motion-toggle { width:40px; height:40px; margin-top:4px; }.flat-key b { font-size:13px; }.flat-key[data-key="LANG"] b { font-size:8px; }
  .feature-scene { padding-block:56px 62px; }.section-heading { display:block; margin-bottom:36px; }.section-heading>p { margin-top:16px; font-size:14px; }
  .experience-story { display:block; }.story-input { padding-top:0; position:static; }.story-heading { margin-bottom:20px; }.story-heading p,.story-save p { font-size:14px; }
