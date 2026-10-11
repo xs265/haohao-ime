@@ -10,11 +10,14 @@ import java.nio.file.Path
 
 class TranslationQualityTest :
     StringSpec({
-        "runtime translations are single lexical English words" {
+        "runtime translations are short English words or phrases" {
             TranslationQuality.translationIssues("computer") shouldBe emptyList()
             TranslationQuality.translationIssues("good-looking") shouldBe emptyList()
-            TranslationQuality.translationIssues("to sigh") shouldBe listOf("not a single English word")
-            TranslationQuality.translationIssues("input method") shouldBe listOf("not a single English word")
+            TranslationQuality.translationIssues("hard to say") shouldBe emptyList()
+            TranslationQuality.translationIssues("to sigh") shouldBe emptyList()
+            TranslationQuality.translationIssues("input method") shouldBe emptyList()
+            TranslationQuality.translationIssues("this phrase is far too long to display") shouldBe
+                listOf("too long", "not a short English phrase")
         }
 
         "manual regression set has fixed quotas and traces every override" {
@@ -34,7 +37,7 @@ class TranslationQualityTest :
             cases.map { it.text }.distinct().size shouldBe cases.size
             cases.associateBy { it.text }.getValue("倪").translation shouldBe null
             cases.filter { it.translation != null }.forEach {
-                (it.translation!!.codePointCount(0, it.translation.length) <= 18) shouldBe true
+                (it.translation!!.codePointCount(0, it.translation.length) <= 22) shouldBe true
             }
             overrides.keys.all(cases.associateBy { it.text }::containsKey) shouldBe true
         }

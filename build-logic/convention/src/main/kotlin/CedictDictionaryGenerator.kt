@@ -13,7 +13,7 @@ import java.util.zip.GZIPInputStream
 internal object CedictDictionaryGenerator {
     private const val FORMAT_VERSION = 2
     private const val INDEX_RECORD_SIZE = 24
-    private const val MAX_DEFINITION_CODE_POINTS = 18
+    private const val MAX_DEFINITION_CODE_POINTS = 22
     private val MAGIC = byteArrayOf('H'.code.toByte(), 'H'.code.toByte(), 'D'.code.toByte(), 'I'.code.toByte(), 'C'.code.toByte(), 'T'.code.toByte(), '2'.code.toByte(), 0)
     private val ENTRY_PATTERN = Regex("^(\\S+)\\s+(\\S+)\\s+\\[{1,2}([^]]+)]{1,2}\\s+/(.*)/$")
     private val STRUCTURAL_PREFIXES = listOf(
@@ -33,12 +33,21 @@ internal object CedictDictionaryGenerator {
     private val WHITESPACE = Regex("\\s+")
     private val ACRONYM = Regex("^[A-Z][A-Z0-9.-]*$")
     private val ENGLISH_WORD = Regex("[A-Za-z]+(?:['\u2019-][A-Za-z]+)*")
+    // Customized build: short multi-word phrases ("hard to say", "no good", "return home")
+    // are allowed, matching the bilingual display style of the reference keyboard.
+    private val ENGLISH_PHRASE = Regex("[A-Za-z]+(?:['\u2019-][A-Za-z]+)*(?: [A-Za-z]+(?:['\u2019-][A-Za-z]+)*){0,3}")
     private val SIMPLE_DEFINITION_PREFIX = Regex("(?:to|a|an|the)\\s+(.+)", RegexOption.IGNORE_CASE)
     private val ENGLISH_TOKEN = Regex("[a-z]+(?:['-][a-z]+)*")
+
+    private data class NormalizedDefinition(
+        val text: String,
+        val isPhrase: Boolean,
+    )
 
     private data class DefinitionChoice(
         val text: String,
         val sourceIndex: Int,
+        val isPhrase: Boolean = false,
     ) {
         val acronymPenalty = if (ACRONYM.matches(text)) 1 else 0
     }
@@ -91,10 +100,13 @@ internal object CedictDictionaryGenerator {
                         .asSequence()
                         .flatMap { it.split(';').asSequence() }
                         .mapIndexedNotNull { index, definition ->
-                            normalizeDefinition(definition)?.let { DefinitionChoice(it, index) }
+                            normalizeDefinition(definition)?.let { normalized ->
+                                DefinitionChoice(normalized.text, index, normalized.isPhrase)
+                            }
                         }
                         .minWithOrNull(
                             compareBy<DefinitionChoice>(DefinitionChoice::acronymPenalty)
+                                .thenBy { it.isPhrase }
                                 .thenBy(DefinitionChoice::sourceIndex),
                         )
                         ?.text
@@ -164,7 +176,7 @@ internal object CedictDictionaryGenerator {
         return GeneratedDictionary(release, entries)
     }
 
-    private fun normalizeDefinition(rawDefinition: String): String? {
+    private fun normalizeDefinition(rawDefinition: String): NormalizedDefinition? {
         val definition = rawDefinition.trim()
         if (definition.isEmpty()) return null
         if (STRUCTURAL_PREFIXES.any { definition.startsWith(it, ignoreCase = true) }) return null
@@ -177,15 +189,18 @@ internal object CedictDictionaryGenerator {
             .trim(' ', ',', ';', ':', '-', '\u2013', '\u2014')
         if (normalized.isEmpty() || !LATIN_LETTER.containsMatchIn(normalized)) return null
         if (normalized.any { it == '(' || it == ')' || it == '[' || it == ']' }) return null
-        val word = when {
-            ENGLISH_WORD.matches(normalized) -> normalized
-            else -> SIMPLE_DEFINITION_PREFIX.matchEntire(normalized)
-                ?.groupValues
-                ?.get(1)
-                ?.takeIf(ENGLISH_WORD::matches)
-        } ?: return null
+        val stripped = SIMPLE_DEFINITION_PREFIX.matchEntire(normalized)
+            ?.groupValues
+            ?.get(1)
+        val (word, isPhrase) = when {
+            ENGLISH_WORD.matches(normalized) -> normalized to false
+            stripped != null && ENGLISH_WORD.matches(stripped) -> stripped to false
+            stripped != null && ENGLISH_PHRASE.matches(stripped) -> stripped to true
+            ENGLISH_PHRASE.matches(normalized) -> normalized to true
+            else -> return null
+        }
         if (word.codePointCount(0, word.length) > MAX_DEFINITION_CODE_POINTS) return null
-        return word
+        return NormalizedDefinition(word, isPhrase)
     }
 
     internal fun readPronunciations(source: InputStream): Map<String, String> = buildMap {

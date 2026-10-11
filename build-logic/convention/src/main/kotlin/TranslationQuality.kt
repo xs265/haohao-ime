@@ -6,12 +6,13 @@ import java.io.Reader
 import java.util.TreeSet
 
 internal object TranslationQuality {
-    private const val MAX_TRANSLATION_CODE_POINTS = 18
+    private const val MAX_TRANSLATION_CODE_POINTS = 22
     private val LATIN_LETTER = Regex("[A-Za-z]")
     private val REPEATED_WHITESPACE = Regex("\\s{2,}")
     private val ABNORMAL_PUNCTUATION = Regex("[!?.,]{2,}")
     private val ALLOWED_TRANSLATION = Regex("[A-Za-z0-9][A-Za-z0-9 .,&+'\u2019?!-]*")
-    private val SINGLE_ENGLISH_WORD = Regex("[A-Za-z]+(?:['\u2019-][A-Za-z]+)*")
+    // Customized build: allow short multi-word phrases (up to 4 words, e.g. "hard to say").
+    private val SHORT_ENGLISH_PHRASE = Regex("[A-Za-z]+(?:['\u2019-][A-Za-z]+)*(?: [A-Za-z]+(?:['\u2019-][A-Za-z]+)*){0,3}")
     private val REJECTED_MARKERS =
         listOf(
             "CL:",
@@ -164,7 +165,7 @@ internal object TranslationQuality {
         if (!ALLOWED_TRANSLATION.matches(translation)) add("unexpected characters")
         if (translation.any { it == '(' || it == ')' || it == '[' || it == ']' }) add("metadata brackets")
         if (REJECTED_MARKERS.any { translation.contains(it, ignoreCase = true) }) add("structural metadata")
-        if (!SINGLE_ENGLISH_WORD.matches(translation)) add("not a single English word")
+        if (!SHORT_ENGLISH_PHRASE.matches(translation)) add("not a short English phrase")
     }
 
     private val BEST_FIRST = Comparator<WeightedHeadword> { left, right ->

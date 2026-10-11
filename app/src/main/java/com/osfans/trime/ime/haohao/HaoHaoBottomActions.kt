@@ -50,9 +50,9 @@ class HaoHaoBottomActions(
         id = View.generateViewId()
         gravity = Gravity.CENTER_VERTICAL
         setPadding(dp(16), 0, dp(16), 0)
-        addView(icon(R.drawable.ic_baseline_keyboard_24, R.string.ime_switch_keyboard) { showInputMethods() })
-        addView(View(context), LinearLayout.LayoutParams(0, 1, 1f))
-        addView(icon(R.drawable.ic_clipboard_24, R.string.ime_clips_phrases) { showClipboard() })
+        // Customized build: the keyboard-switcher and clipboard shortcut icons were removed
+        // from this bottom spacer. They duplicated the system keyboard switcher / toolbar
+        // entries, so the spacer is kept empty for layout stability and popover anchoring.
     }
 
     private fun icon(drawable: Int, label: Int, action: () -> Unit) = ImageButton(context).apply {

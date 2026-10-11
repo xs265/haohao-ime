@@ -281,15 +281,17 @@ class CandidateItemUi(
 
     private val stackedContent = verticalLayout {
         gravity = itemGravity
+        // Customized build: English translation on top, Chinese candidate below,
+        // so candidates read like "hello / 你好" (English first, then the Chinese word).
         add(
-            candidateContentViewport,
-            lParams(itemWidth, dp(candidateSourceRowHeight(theme.generalStyle.candidateViewHeight, textSize, ctx.resources.configuration.fontScale))) {
+            translation,
+            lParams(itemWidth, dp(translationLineHeight)) {
                 gravity = itemGravity
             },
         )
         add(
-            translation,
-            lParams(itemWidth, dp(translationLineHeight)) {
+            candidateContentViewport,
+            lParams(itemWidth, dp(candidateSourceRowHeight(theme.generalStyle.candidateViewHeight, textSize, ctx.resources.configuration.fontScale))) {
                 gravity = itemGravity
             },
         )
