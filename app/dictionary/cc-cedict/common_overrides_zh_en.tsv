@@ -23,7 +23,6 @@
 有	have
 在	at
 输入	input
-输入法	-
 天气	weather
 电脑	computer
 塔斯汀	Tastien
@@ -63,9 +62,7 @@
 妹妹	sister
 吃饭	eat
 喝水	drink
-回家	-
 上班	work
-下班	-
 开始	start
 结束	end
 喜欢	like
@@ -87,23 +84,22 @@
 欢迎	welcome
 不客气	welcome
 辛苦了	thanks
-请问	-
+请问	may I ask
 稍等	wait
 等一下	wait
 没问题	okay
-不知道	-
+不知道	don't know
 我知道	know
 我觉得	think
 我喜欢	like
 我需要	need
 我可以	can
-可以吗	-
+可以吗	is it okay
 怎么样	how
 为什么	why
 什么时候	when
 在哪里	where
-怎么办	-
-没办法	-
+没办法	no way
 不要紧	okay
 小心点	careful
 慢一点	slower
@@ -134,7 +130,6 @@
 大模型	LLM
 提示词	prompt
 智能体	agent
-云计算	-
 开源	open-source
 应用程序	app
 

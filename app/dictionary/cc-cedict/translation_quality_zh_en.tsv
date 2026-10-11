@@ -60,7 +60,7 @@
 生活	life	word
 世界	world	word
 输入	input	word
-输入法	-	word
+输入法	input method	word
 天气	weather	word
 电脑	computer	word
 意思	meaning	word
@@ -102,9 +102,9 @@
 医院	hospital	word
 吃饭	eat	word
 喝水	drink	word
-回家	-	word
+回家	return home	word
 上班	work	word
-下班	-	word
+下班	finish work	word
 开始	start	word
 结束	end	word
 喜欢	like	word
@@ -126,23 +126,23 @@
 欢迎	welcome	phrase
 不客气	welcome	phrase
 辛苦了	thanks	phrase
-请问	-	phrase
+请问	may I ask	phrase
 稍等	wait	phrase
 等一下	wait	phrase
 没问题	okay	phrase
-不知道	-	phrase
+不知道	don't know	phrase
 我知道	know	phrase
 我觉得	think	phrase
 我喜欢	like	phrase
 我需要	need	phrase
 我可以	can	phrase
-可以吗	-	phrase
+可以吗	is it okay	phrase
 怎么样	how	phrase
 为什么	why	phrase
 什么时候	when	phrase
 在哪里	where	phrase
-怎么办	-	phrase
-没办法	-	phrase
+怎么办	what's to be done	phrase
+没办法	no way	phrase
 不要紧	okay	phrase
 小心点	careful	phrase
 慢一点	slower	phrase
@@ -173,7 +173,7 @@
 大模型	LLM	modern
 提示词	prompt	modern
 智能体	agent	modern
-云计算	-	modern
+云计算	cloud computing	modern
 数据库	database	modern
 开源	open-source	modern
 程序员	programmer	modern
