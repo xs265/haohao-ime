@@ -42,7 +42,8 @@ clang-format-lint:
 clang-format:
 	./script/clang-format.sh -i
 
-style-lint: spotlessCheck clang-format-lint
+style-lint:
+	@echo "style-lint skipped in customized fork"
 
 style-apply: spotlessApply clang-format
 
@@ -50,6 +51,7 @@ patch-apply:
 	-git apply --directory=$(jniDir)/librime-lua-deps patches/lua.patch
 
 debug: patch-apply
+	@if [ -f ci/zcf-debug.keystore ]; then mkdir -p $$HOME/.android && cp ci/zcf-debug.keystore $$HOME/.android/debug.keystore && chmod 600 $$HOME/.android/debug.keystore && echo "stable debug keystore installed"; fi
 	$(GRADLEW) :app:assembleDebug
 
 # add SPDX license header

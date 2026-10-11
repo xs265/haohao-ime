@@ -7,14 +7,14 @@
 
 <resources xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
     <!-- 輸入法平臺名稱  -->
-    <string name="app_name_release">好好輸入法</string>
+    <string name="app_name_release">Z次方定制版</string>
     <string name="keycap_style">按鍵樣式</string>
     <string name="keycap_style_classic">經典</string>
     <string name="keycap_style_raised">立體</string>
     <string name="keycap_style_hint">選擇樣式與配色，再試試實際打字手感。</string>
     <string name="keycap_style_try">試試目前鍵盤</string>
     <string name="keycap_style_theme_hint">按鍵樣式適用於好好輸入法主題。</string>
-    <string name="app_name_debug">好好輸入法（除錯）</string>
+    <string name="app_name_debug">Z次方定制版</string>
     <!-- Preference settings -->
     <string name="qq_group_1">同文 QQ 羣 1</string>
     <string name="qq_group_2">同文 QQ 羣 2</string>
