@@ -207,9 +207,9 @@ class HaoHaoDefaultsTest :
             style["keyboard_padding"]?.int shouldBe 3
             style["keyboard_height"]?.int shouldBe 252
             style["round_corner"]?.float shouldBe 7f
-            style["key_border"]?.int shouldBe 1
+            style["key_border"]?.int shouldBe 0
             style["key_press_offset_y"]?.float shouldBe 1f
-            style["key_shadow_offset_y"]?.float shouldBe 1f
+            style["key_shadow_offset_y"]?.float shouldBe 0f
             style["candidate_corner_radius"]?.float shouldBe 8f
             decodedStyle.compactCandidateTextSize shouldBe 20f
             decodedStyle.compactTranslationTextSize shouldBe 13f
@@ -228,17 +228,17 @@ class HaoHaoDefaultsTest :
             val light = requireNotNull(colorSchemes["default"]?.mapping)
             val dark = requireNotNull(colorSchemes["haohao_dark"]?.mapping)
             light["dark_scheme"]?.string shouldBe "haohao_dark"
-            light["keyboard_back_color"]?.int shouldBe 0xe7e2d8
-            light["key_back_color"]?.int shouldBe 0xfffdf8
-            light["key_border_color"]?.int shouldBe 0xe3ddd2
-            light["key_shadow_color"]?.int shouldBe 0x1f513a32
+            light["keyboard_back_color"]?.int shouldBe 0xf2f3f5
+            light["key_back_color"]?.int shouldBe 0xffffff
+            light["key_border_color"]?.int shouldBe 0xffffff
+            light["key_shadow_color"]?.int shouldBe 0x00000000
             light["key_highlight_color"]?.int shouldBe 0x66ffffff
-            light["key_symbol_color"]?.int shouldBe 0xaeb2b8
-            light["off_key_symbol_color"]?.int shouldBe 0xaeb2b8
-            light["toolbar_icon_color"]?.int shouldBe 0x7a6860
-            light["hilited_toolbar_icon_color"]?.int shouldBe 0x426c54
-            light["off_key_back_color"]?.int shouldBe 0xdcece2
-            light["on_key_back_color"]?.int shouldBe 0xf4bf61
+            light["key_symbol_color"]?.int shouldBe 0x9aa0a6
+            light["off_key_symbol_color"]?.int shouldBe 0x9aa0a6
+            light["toolbar_icon_color"]?.int shouldBe 0x5f6368
+            light["hilited_toolbar_icon_color"]?.int shouldBe 0x1f2429
+            light["off_key_back_color"]?.int shouldBe 0xe8eaed
+            light["on_key_back_color"]?.int shouldBe 0xdde1e6
             dark["keyboard_back_color"]?.int shouldBe 0x24231f
             dark["key_back_color"]?.int shouldBe 0x302d28
             dark["key_border_color"]?.int shouldBe 0x45413a
@@ -599,7 +599,7 @@ class HaoHaoDefaultsTest :
             ).enabled shouldBe true
         }
 
-        "main keyboard follows the compact four-row layout with long-press symbols" {
+        "main keyboard follows the compact four-row layout with hidden hint labels and long-press symbols" {
             val main = keyboard("default")
 
             main.asciiMode shouldBe false
@@ -624,7 +624,8 @@ class HaoHaoDefaultsTest :
             )
             expectedSymbols.forEach { (click, symbol) ->
                 val key = main.keys.single { it.behaviors[KeyBehavior.CLICK] == KeyActionToken.Plain(click) }
-                key.labelSymbol shouldBe symbol
+                // Customized: hint labels are hidden for the clean key look; long-press still works.
+                key.labelSymbol shouldBe ""
                 key.behaviors[KeyBehavior.LONG_CLICK] shouldBe KeyActionToken.Plain(symbol)
             }
             main.keys.single { it.behaviors[KeyBehavior.CLICK] == KeyActionToken.Plain("Shift_L") }.let { shift ->

@@ -39,9 +39,9 @@ style:
   key_text_size: 20
   key_long_text_size: 16
   symbol_text_size: 11
-  key_border: 1
+  key_border: 0
   key_press_offset_y: 1
-  key_shadow_offset_y: 1
+  key_shadow_offset_y: 0
   label_text_size: 16
   popup_text_size: 16
   keyboard_height: 252
@@ -137,48 +137,49 @@ preset_color_schemes:
     name: 好好浅色
     author: HaoHao IME contributors
     dark_scheme: haohao_dark
-    back_color: 0xf7f4ec
-    root_background: 0xf7f4ec
-    keyboard_back_color: 0xe7e2d8
-    candidate_background: 0xf7f4ec
-    candidate_border_color: 0xe3ddd2
-    candidate_separator_color: 0xe3ddd2
-    border_color: 0xe3ddd2
-    candidate_text_color: 0x513a32
-    comment_text_color: 0x7a6860
-    label_color: 0x7a6860
-    text_color: 0x513a32
-    text_back_color: 0xf7f4ec
-    key_back_color: 0xfffdf8
-    key_border_color: 0xe3ddd2
-    key_shadow_color: 0x1f513a32
+    # Customized: WeChat-IME-like clean palette - white keys on light gray, no decoration.
+    back_color: 0xf5f6f8
+    root_background: 0xf5f6f8
+    keyboard_back_color: 0xf2f3f5
+    candidate_background: 0xf5f6f8
+    candidate_border_color: 0xe8eaed
+    candidate_separator_color: 0xe8eaed
+    border_color: 0xe8eaed
+    candidate_text_color: 0x181a1c
+    comment_text_color: 0x878d95
+    label_color: 0x878d95
+    text_color: 0x181a1c
+    text_back_color: 0xffffff
+    key_back_color: 0xffffff
+    key_border_color: 0xffffff
+    key_shadow_color: 0x00000000
     key_highlight_color: 0x66ffffff
-    key_text_color: 0x513a32
-    key_symbol_color: 0xaeb2b8
-    off_key_back_color: 0xdcece2
-    off_key_text_color: 0x513a32
-    off_key_symbol_color: 0xaeb2b8
-    toolbar_icon_color: 0x7a6860
-    hilited_toolbar_icon_color: 0x426c54
-    on_key_back_color: 0xf4bf61
-    on_key_text_color: 0x513a32
-    on_key_symbol_color: 0xfffdf8
-    hilited_key_back_color: 0xdcece2
-    hilited_key_text_color: 0x513a32
-    hilited_key_symbol_color: 0xe8ac43
-    hilited_off_key_back_color: 0xc8dece
-    hilited_off_key_text_color: 0x513a32
-    hilited_off_key_symbol_color: 0xe8ac43
-    hilited_on_key_back_color: 0xe8ac43
-    hilited_on_key_text_color: 0x513a32
-    hilited_on_key_symbol_color: 0xfffdf8
-    hilited_candidate_back_color: 0xdcece2
-    hilited_candidate_text_color: 0x367553
-    hilited_comment_text_color: 0x426c54
-    hilited_back_color: 0xdcece2
-    hilited_text_color: 0x426c54
-    preview_back_color: 0x513a32
-    preview_text_color: 0xfffdf8
+    key_text_color: 0x181a1c
+    key_symbol_color: 0x9aa0a6
+    off_key_back_color: 0xe8eaed
+    off_key_text_color: 0x181a1c
+    off_key_symbol_color: 0x9aa0a6
+    toolbar_icon_color: 0x5f6368
+    hilited_toolbar_icon_color: 0x1f2429
+    on_key_back_color: 0xdde1e6
+    on_key_text_color: 0x181a1c
+    on_key_symbol_color: 0xffffff
+    hilited_key_back_color: 0xd5d9de
+    hilited_key_text_color: 0x181a1c
+    hilited_key_symbol_color: 0x5f6368
+    hilited_off_key_back_color: 0xcdd1d6
+    hilited_off_key_text_color: 0x181a1c
+    hilited_off_key_symbol_color: 0x5f6368
+    hilited_on_key_back_color: 0xcdd1d6
+    hilited_on_key_text_color: 0x181a1c
+    hilited_on_key_symbol_color: 0xffffff
+    hilited_candidate_back_color: 0xe7f3e9
+    hilited_candidate_text_color: 0x1e7a3a
+    hilited_comment_text_color: 0x1e7a3a
+    hilited_back_color: 0xe4e6ea
+    hilited_text_color: 0x181a1c
+    preview_back_color: 0x303336
+    preview_text_color: 0xffffff
     shadow_color: 0x000000
 
   haohao_dark:
@@ -532,35 +533,35 @@ preset_keyboards:
     width: 10
     height: 50
     keys:
-      - {click: q, label_symbol: "1", long_click: "1"}
-      - {click: w, label_symbol: "2", long_click: "2"}
-      - {click: e, label_symbol: "3", long_click: "3"}
-      - {click: r, label_symbol: "4", long_click: "4"}
-      - {click: t, label_symbol: "5", long_click: "5"}
-      - {click: y, label_symbol: "6", long_click: "6"}
-      - {click: u, label_symbol: "7", long_click: "7"}
-      - {click: i, label_symbol: "8", long_click: "8"}
-      - {click: o, label_symbol: "9", long_click: "9"}
-      - {click: p, label_symbol: "0", long_click: "0"}
+      - {click: q, long_click: "1"}
+      - {click: w, long_click: "2"}
+      - {click: e, long_click: "3"}
+      - {click: r, long_click: "4"}
+      - {click: t, long_click: "5"}
+      - {click: y, long_click: "6"}
+      - {click: u, long_click: "7"}
+      - {click: i, long_click: "8"}
+      - {click: o, long_click: "9"}
+      - {click: p, long_click: "0"}
       - {width: 5}
-      - {click: a, label_symbol: "~", long_click: "~"}
-      - {click: s, label_symbol: "!", long_click: "!"}
-      - {click: d, label_symbol: "@", long_click: "@"}
-      - {click: f, label_symbol: "#", long_click: "#"}
-      - {click: g, label_symbol: "%", long_click: "%"}
-      - {click: h, label_symbol: "“", long_click: "“"}
-      - {click: j, label_symbol: "”", long_click: "”"}
-      - {click: k, label_symbol: "*", long_click: "*"}
-      - {click: l, label_symbol: "?", long_click: "?"}
+      - {click: a, long_click: "~"}
+      - {click: s, long_click: "!"}
+      - {click: d, long_click: "@"}
+      - {click: f, long_click: "#"}
+      - {click: g, long_click: "%"}
+      - {click: h, long_click: "“"}
+      - {click: j, long_click: "”"}
+      - {click: k, long_click: "*"}
+      - {click: l, long_click: "?"}
       - {width: 5}
       - {click: Shift_L, long_click: Shift_L, label_symbol: "\u200B", width: 15, key_text_size: 22}
-      - {click: z, label_symbol: "(", long_click: "("}
-      - {click: x, label_symbol: ")", long_click: ")"}
-      - {click: c, label_symbol: "-", long_click: "-"}
-      - {click: v, label_symbol: "_", long_click: "_"}
-      - {click: b, label_symbol: ":", long_click: ":"}
-      - {click: n, label_symbol: ";", long_click: ";"}
-      - {click: m, label_symbol: "、", long_click: "、"}
+      - {click: z, long_click: "("}
+      - {click: x, long_click: ")"}
+      - {click: c, long_click: "-"}
+      - {click: v, long_click: "_"}
+      - {click: b, long_click: ":"}
+      - {click: n, long_click: ";"}
+      - {click: m, long_click: "、"}
       - {click: BackSpace, width: 15, key_text_size: 22}
       - {click: HaoHaoSymbols, width: 15.5, key_text_size: 16}
       - {click: HaoHaoNumber, width: 11.5}
