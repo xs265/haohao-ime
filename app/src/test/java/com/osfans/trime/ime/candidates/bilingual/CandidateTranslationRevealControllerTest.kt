@@ -93,22 +93,28 @@ class CandidateTranslationRevealControllerTest :
             scheduler.tasks.last().cancelled shouldBe true
         }
 
-        "a new Rime key hides translations and cancels the pending lookup" {
+        "a new Rime key keeps revealed translations visible and cancels the pending lookup" {
             val scheduler = FakeDelayScheduler()
             val controller = controller(scheduler, { true }, { 300 })
 
             controller.onCandidateListUpdate(candidates("你好"))
             controller.onRimeKeyInput()
-
-            controller.state shouldBe CandidateTranslationRevealState.HIDDEN
+            controller.state shouldBe CandidateTranslationRevealState.PENDING
             scheduler.tasks.single().cancelled shouldBe true
             scheduler.run(index = 0, includeCancelled = true)
-            controller.state shouldBe CandidateTranslationRevealState.HIDDEN
+            controller.state shouldBe CandidateTranslationRevealState.PENDING
+
+            scheduler.tasks.clear()
+            controller.onCandidateListUpdate(candidates("你好"))
+            scheduler.run(index = 0)
+            controller.state shouldBe CandidateTranslationRevealState.READY
+            controller.onRimeKeyInput()
+            controller.state shouldBe CandidateTranslationRevealState.READY
         }
 
-        "delay preference defaults to 300 milliseconds in 100 millisecond steps" {
+        "delay preference defaults to 0 milliseconds in 100 millisecond steps" {
             BILINGUAL_TRANSLATION_DELAY_MIN_MS shouldBe 0
-            BILINGUAL_TRANSLATION_DELAY_DEFAULT_MS shouldBe 300
+            BILINGUAL_TRANSLATION_DELAY_DEFAULT_MS shouldBe 0
             BILINGUAL_TRANSLATION_DELAY_MAX_MS shouldBe 1_000
             BILINGUAL_TRANSLATION_DELAY_STEP_MS shouldBe 100
         }

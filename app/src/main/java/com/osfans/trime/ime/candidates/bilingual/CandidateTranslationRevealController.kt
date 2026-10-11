@@ -14,7 +14,9 @@ import com.osfans.trime.ime.broadcast.InputBroadcastReceiver
 import java.util.concurrent.CopyOnWriteArraySet
 
 internal const val BILINGUAL_TRANSLATION_DELAY_MIN_MS = 0
-internal const val BILINGUAL_TRANSLATION_DELAY_DEFAULT_MS = 300
+// Customized build: reveal translations immediately so English stays visible while typing
+// (matches the reference "type and learn" keyboard instead of the 300 ms stability pause).
+internal const val BILINGUAL_TRANSLATION_DELAY_DEFAULT_MS = 0
 internal const val BILINGUAL_TRANSLATION_DELAY_MAX_MS = 1_000
 internal const val BILINGUAL_TRANSLATION_DELAY_STEP_MS = 100
 
@@ -107,9 +109,13 @@ internal class CandidateTranslationRevealController(
     }
 
     override fun onRimeKeyInput() {
-        hasCandidates = false
+        // Customized build: keep already-revealed translations visible while typing, so the
+        // English line does not blink out on every keystroke. Only hide when there is nothing
+        // to show or the feature is off.
         cancelPendingReveal()
-        publish(CandidateTranslationRevealState.HIDDEN)
+        if (!hasCandidates || !isTranslationEnabled()) {
+            publish(CandidateTranslationRevealState.HIDDEN)
+        }
     }
 
     override fun onCandidateListUpdate(data: Candidates.Bulk) {
