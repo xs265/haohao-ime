@@ -31,7 +31,7 @@ style:
   horizontal_gap: 3
   vertical_gap: 8
   keyboard_padding: 3
-  keyboard_padding_bottom: 40
+  keyboard_padding_bottom: 6
   keyboard_padding_land: 24
   keyboard_padding_land_bottom: 6
   key_height: 50

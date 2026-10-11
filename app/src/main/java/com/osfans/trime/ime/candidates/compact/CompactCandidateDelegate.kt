@@ -716,13 +716,15 @@ class CompactCandidateDelegate : InputBroadcastReceiver {
     val candidateView by lazy {
         LinearLayout(context).apply {
             orientation = LinearLayout.VERTICAL
-            addView(view, LinearLayout.LayoutParams(-1, -2))
             val lineHeight = bilingualTranslationLineHeight(
                 typography.translationTextSize * context.resources.configuration.fontScale,
                 theme.generalStyle.commentHeight,
             )
+            // Customized build: the English translation lane sits ABOVE the Chinese row,
+            // so candidates read "English on top, Chinese below".
             addView(sentenceStrip.root, LinearLayout.LayoutParams(-1, context.dp(lineHeight * 2)))
             sentenceStrip.root.visibility = View.GONE
+            addView(view, LinearLayout.LayoutParams(-1, -2))
         }
     }
 
